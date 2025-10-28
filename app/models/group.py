@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, ForeignKey, String, func, select
+from sqlalchemy.orm import column_property, relationship
 
 from app.core.database import Base
 from app.core.utils import generate_uuid
+from app.models.flashcard import Flashcard
 
 
 class Group(Base):
@@ -17,3 +18,10 @@ class Group(Base):
 
     user = relationship("User", back_populates="groups")
     flashcards = relationship("Flashcard", back_populates="group", cascade="all, delete-orphan")
+
+    flashcards_count = column_property(
+        select(func.count(Flashcard.id))
+        .where(Flashcard.group_id == id)
+        .correlate_except(Flashcard)
+        .scalar_subquery()
+    )
