@@ -32,7 +32,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # ====== Database (async SQLAlchemy) ======
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/smartcards"
+    "postgresql+asyncpg://postgres:postgres@db:5432/smartcards"
 )
 
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)
@@ -76,14 +76,6 @@ class Flashcard(Base):
     group_id = Column(String, ForeignKey("groups.id"), nullable=False)
 
     group = relationship("Group", back_populates="flashcards")
-
-
-# Create tables on startup
-@app.post("/startup")
-async def on_startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
 
 
 # Dependency: async DB session

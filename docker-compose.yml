@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   db:
     image: postgres:16
@@ -12,6 +11,30 @@ services:
       POSTGRES_DB: smartcards
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: smartcards-backend
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartcards
+      - SECRET_KEY=super_secret_key_123
+    command: >
+      bash -c " ./wait-for-db.sh db &&
+
+      if [ ! -f alembic/versions/*.py ]; then
+        echo 'Creating initial migration...'
+        alembic revision --autogenerate -m 'initial_tables'
+      fi
+
+      alembic upgrade head &&
+
+      python main.py "
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
 
 volumes:
   postgres_data:
