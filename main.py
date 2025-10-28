@@ -203,4 +203,5 @@ def upload_file(file: UploadFile = File(...), current_user: dict = Depends(get_c
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("mai:app", reload=True)
+    #sfsd
