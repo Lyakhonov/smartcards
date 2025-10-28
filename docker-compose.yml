@@ -21,7 +21,8 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartcards
       - SECRET_KEY=super_secret_key_123
     command: >
-      bash -c " ./wait-for-db.sh db &&
+      
+      bash -c "  chmod +x ./wait-for-db.sh && ./wait-for-db.sh db &&
 
       if [ ! -f alembic/versions/*.py ]; then
         echo 'Creating initial migration...'
@@ -30,7 +31,7 @@ services:
 
       alembic upgrade head &&
 
-      python main.py "
+      python -m app.main "
     ports:
       - "8000:8000"
     volumes:

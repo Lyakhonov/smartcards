@@ -12,7 +12,7 @@ config = context.config
 
 # Добавляем родительскую директорию в путь
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from main import Base
+from app.core.database import Base
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
