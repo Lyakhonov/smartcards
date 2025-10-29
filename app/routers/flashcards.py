@@ -6,8 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import get_current_user
+from app.core.utils import generate_uuid
 from app.models.flashcard import Flashcard
-from app.schemas.flashcard import FlashcardResponse, FlashcardUpdate
+from app.models.group import Group
+from app.schemas.flashcard import (FlashcardCreate, FlashcardResponse,
+                                   FlashcardUpdate)
 
 router = APIRouter()
 
@@ -16,6 +19,34 @@ async def get_flashcards_by_group(group_id: str, current_user=Depends(get_curren
     q = select(Flashcard).where(Flashcard.group_id == group_id, Flashcard.user_id == current_user.id)
     result = await db.execute(q)
     return result.scalars().all()
+
+@router.post("/", response_model=FlashcardResponse)
+async def create_flashcard(
+    group_id: str,
+    new_card: FlashcardCreate,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # Проверяем, что группа принадлежит пользователю
+    q = select(Group).where(Group.id == group_id, Group.user_id == current_user.id)
+    res = await db.execute(q)
+    group = res.scalars().first()
+
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found or not owned by user")
+
+    card = Flashcard(
+        id=generate_uuid(),
+        question=new_card.question,
+        answer=new_card.answer,
+        user_id=current_user.id,
+        group_id=group_id
+    )
+
+    db.add(card)
+    await db.commit()
+    await db.refresh(card)
+    return card
 
 @router.delete("/{card_id}")
 async def delete_flashcard(card_id: str, current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):

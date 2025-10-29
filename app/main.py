@@ -1,8 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app.core.config import settings
-from app.core.database import Base, engine
 from app.routers import auth, flashcards, groups
 
 app = FastAPI(title="SmartCards Backend")
