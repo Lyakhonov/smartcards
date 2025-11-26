@@ -9,6 +9,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: smartcards
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -16,22 +21,13 @@ services:
     build: .
     container_name: smartcards-backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartcards
       - SECRET_KEY=super_secret_key_123
     command: >
-      
-      bash -c "  chmod +x ./wait-for-db.sh && ./wait-for-db.sh db &&
-
-      if [ ! -f alembic/versions/*.py ]; then
-        echo 'Creating initial migration...'
-        alembic revision --autogenerate -m 'initial_tables'
-      fi
-
-      alembic upgrade head &&
-
-      python -m app.main "
+      bash -c "alembic upgrade head && python -m app.main "
     ports:
       - "8000:8000"
     volumes:
