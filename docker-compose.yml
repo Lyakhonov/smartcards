@@ -31,7 +31,18 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+
+  ollama:
+    image: ollama/ollama
+    container_name: smartcards-ai
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
 
 volumes:
   postgres_data:
+  ollama_data:

@@ -11,6 +11,8 @@ from app.core.utils import generate_uuid
 from app.models.flashcard import Flashcard
 from app.models.group import Group
 from app.schemas.group import FileUploadResponse, GroupResponse
+from app.services.llm import generate_flashcards
+from app.services.pdf import extract_text_from_pdf
 
 router = APIRouter()
 
@@ -31,11 +33,16 @@ async def upload_file(file: UploadFile = File(...), current_user=Depends(get_cur
         created_at=datetime.now(timezone.utc)
     )
     db.add(new_group)
-    for i in range(3):
+    contents = await file.read()
+    text = extract_text_from_pdf(contents)
+
+    flashcards = await generate_flashcards(text)
+
+    for card in flashcards:
         db.add(Flashcard(
             id=generate_uuid(),
-            question=f"Вопрос {i+1} к {file.filename}",
-            answer=f"Ответ {i+1}",
+            question=card["question"],
+            answer=card["answer"],
             user_id=current_user.id,
             group_id=group_id
         ))
