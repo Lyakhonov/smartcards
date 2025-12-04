@@ -17,7 +17,9 @@ class Group(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="groups")
-    flashcards = relationship("Flashcard", back_populates="group", cascade="all, delete-orphan")
+    flashcards = relationship(
+        "Flashcard", back_populates="group", cascade="all, delete-orphan"
+    )
 
     flashcards_count = column_property(
         select(func.count(Flashcard.id))

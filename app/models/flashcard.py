@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.utils import generate_uuid
 
+
 class Flashcard(Base):
     __tablename__ = "flashcards"
 

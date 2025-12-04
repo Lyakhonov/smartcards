@@ -16,21 +16,29 @@ from app.services.pdf import extract_text_from_pdf
 
 router = APIRouter()
 
+
 @router.get("/", response_model=List[GroupResponse])
-async def get_user_groups(current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def get_user_groups(
+    current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
     q = select(Group).where(Group.user_id == current_user.id)
     result = await db.execute(q)
     groups = result.scalars().all()
     return groups
 
+
 @router.post("/upload", response_model=FileUploadResponse)
-async def upload_file(file: UploadFile = File(...), current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     group_id = generate_uuid()
     new_group = Group(
         id=group_id,
         filename=file.filename,
         user_id=current_user.id,
-        created_at=datetime.now(timezone.utc)
+        created_at=datetime.now(timezone.utc),
     )
     db.add(new_group)
     contents = await file.read()
@@ -39,18 +47,29 @@ async def upload_file(file: UploadFile = File(...), current_user=Depends(get_cur
     flashcards = await generate_flashcards(text)
 
     for card in flashcards:
-        db.add(Flashcard(
-            id=generate_uuid(),
-            question=card["question"],
-            answer=card["answer"],
-            user_id=current_user.id,
-            group_id=group_id
-        ))
+        db.add(
+            Flashcard(
+                id=generate_uuid(),
+                question=card["question"],
+                answer=card["answer"],
+                user_id=current_user.id,
+                group_id=group_id,
+            )
+        )
     await db.commit()
-    return {"group_id": group_id, "filename": file.filename, "message": "File processed successfully"}
+    return {
+        "group_id": group_id,
+        "filename": file.filename,
+        "message": "File processed successfully",
+    }
+
 
 @router.delete("/{group_id}")
-async def delete_group(group_id: str, current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def delete_group(
+    group_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     q = select(Group).where(Group.id == group_id)
     res = await db.execute(q)
     group = res.scalars().first()

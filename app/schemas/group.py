@@ -9,6 +9,7 @@ class GroupResponse(BaseModel):
     created_at: datetime
     flashcards_count: int
 
+
 class FileUploadResponse(BaseModel):
     group_id: str
     filename: str

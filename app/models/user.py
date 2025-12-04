@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from app.core.database import Base
 from app.core.utils import generate_uuid
 
+
 class User(Base):
     __tablename__ = "users"
 

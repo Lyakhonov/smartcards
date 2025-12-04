@@ -4,10 +4,11 @@ import re
 import httpx
 
 LLM_URL = "http://ollama:11434/api/generate"
-MODEL = "mistral"   # или  phi3
+MODEL = "mistral"  # или  phi3
+
 
 async def generate_flashcards(text: str, retries=2):
-    for attempt in range(retries+1):
+    for attempt in range(retries + 1):
         try:
             return await call_llm_once(text)
         except Exception as e:
@@ -15,11 +16,13 @@ async def generate_flashcards(text: str, retries=2):
             if attempt == retries:
                 return []
 
+
 async def call_llm_once(text: str):
     prompt = f"""
     РАЗДЕЛИ ТЕКСТ на смысловые блоки и к каждому блоку напиши вопрос.
     question - твой вопрос, answer - смысловой блок.
-    Ты — сервис, который возвращает ТОЛЬКО JSON массив без каких-либо комментариев, форматирования, Markdown, троеточий, блоков ```json или ```.
+    Ты — сервис, который возвращает ТОЛЬКО JSON массив без каких-либо комментариев,
+    форматирования, Markdown, троеточий, блоков ```json или ```.
 
     Формат ОЧЕНЬ строгий:
 
@@ -40,14 +43,15 @@ async def call_llm_once(text: str):
     {text}
     """
     async with httpx.AsyncClient(timeout=300) as client:
-        response = await client.post(LLM_URL, json={
-            "model": MODEL,
-            "prompt": prompt,
-            "stream": False,
-            "options": {
-                "temperature": 0.1
-            }
-        })
+        response = await client.post(
+            LLM_URL,
+            json={
+                "model": MODEL,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0.1},
+            },
+        )
 
     data = response.json()
     print("RAW DATA FULL:", data)
@@ -77,7 +81,7 @@ def safe_parse_json(text: str):
     json_text = match.group()
 
     # чистка мусора типа static_json:
-    json_text = re.sub(r'static_json\s*:', '', json_text)
+    json_text = re.sub(r"static_json\s*:", "", json_text)
 
     try:
         return json.loads(json_text)
