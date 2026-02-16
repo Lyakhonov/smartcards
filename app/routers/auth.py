@@ -9,11 +9,12 @@ from app.core.database import get_db
 from app.core.security import (
     create_access_token,
     get_user_by_email,
+    get_current_user,  # 👈 ДОБАВИЛИ
     hash_password,
     verify_password,
 )
 from app.core.utils import generate_uuid
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import Token, UserCreate, UserResponse
 
 router = APIRouter()
@@ -24,12 +25,15 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     existing = await get_user_by_email(user.email, db)
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
+
     new_user = User(
         id=generate_uuid(),
         email=user.email,
         password=hash_password(user.password),
         full_name=user.full_name,
+        role=UserRole.user,
     )
+
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
@@ -38,13 +42,25 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login_user(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
 ):
     user = await get_user_by_email(form_data.username, db)
+
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
     access_token = create_access_token(
         {"sub": user.email},
         timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
+
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_user)):
+    """
+    Возвращает текущего авторизованного пользователя.
+    """
+    return current_user

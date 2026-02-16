@@ -6,6 +6,6 @@ def extract_text_from_pdf(file: bytes) -> str:
     text = ""
 
     for page in doc:
-        text += page.get_text()
+        text += page.get_text()  # type: ignore
 
     return text

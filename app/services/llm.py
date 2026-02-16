@@ -54,11 +54,7 @@ async def call_llm_once(text: str):
         )
 
     data = response.json()
-    print("RAW DATA FULL:", data)
     raw = data.get("response", "")
-
-    print("LLM RAW:")
-    print(raw)
 
     return safe_parse_json(raw)
 

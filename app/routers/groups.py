@@ -6,10 +6,12 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.rbac import require_role
 from app.core.security import get_current_user
 from app.core.utils import generate_uuid
 from app.models.flashcard import Flashcard
 from app.models.group import Group
+from app.models.user import User, UserRole
 from app.schemas.group import FileUploadResponse, GroupResponse
 from app.services.llm import generate_flashcards
 from app.services.pdf import extract_text_from_pdf
@@ -67,15 +69,18 @@ async def upload_file(
 @router.delete("/{group_id}")
 async def delete_group(
     group_id: str,
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.admin, UserRole.manager)),
     db: AsyncSession = Depends(get_db),
 ):
     q = select(Group).where(Group.id == group_id)
     res = await db.execute(q)
     group = res.scalars().first()
-    if not group or group.user_id != current_user.id:
+
+    if not group:
         raise HTTPException(status_code=404, detail="Group not found")
+
     await db.execute(delete(Flashcard).where(Flashcard.group_id == group_id))
     await db.execute(delete(Group).where(Group.id == group_id))
     await db.commit()
+
     return {"detail": "Group deleted"}
