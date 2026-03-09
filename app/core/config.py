@@ -7,7 +7,11 @@ load_dotenv()
 class Settings:
     SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_123")
     ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES = 1
+    # Refresh token lifetime (days)
+    REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
+    # Cookie name for refresh token
+    REFRESH_TOKEN_COOKIE_NAME = os.getenv("REFRESH_TOKEN_COOKIE_NAME", "refresh_token")
 
     DATABASE_URL = os.getenv(
         "DATABASE_URL",

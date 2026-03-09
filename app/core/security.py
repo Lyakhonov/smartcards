@@ -4,6 +4,8 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+import hashlib
+import secrets
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -28,6 +30,15 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def generate_refresh_token_raw(nbytes: int = 32) -> str:
+    """Generate a secure random refresh token string to give to client."""
+    return secrets.token_urlsafe(nbytes)
+
+
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 async def get_user_by_email(email: str, db: AsyncSession):

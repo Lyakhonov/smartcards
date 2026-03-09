@@ -16,6 +16,7 @@ from app.core.database import Base
 from app.models.user import User
 from app.models.group import Group
 from app.models.flashcard import Flashcard
+from app.models.refresh_token import RefreshToken
 
 # Теперь metadata знает о таблицах
 target_metadata = Base.metadata
