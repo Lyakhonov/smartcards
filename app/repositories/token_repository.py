@@ -37,9 +37,7 @@ async def revoke_refresh_token(
 
 
 async def revoke_all_for_user(db: AsyncSession, user_id: str):
-    q = await db.execute(
-        select(RefreshToken).where(RefreshToken.user_id == user_id)
-    )
+    q = await db.execute(select(RefreshToken).where(RefreshToken.user_id == user_id))
     tokens = q.scalars().all()
     for t in tokens:
         t.revoked = True

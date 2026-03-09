@@ -56,9 +56,7 @@ async def login_user(
     access_token, refresh_token = await create_tokens_for_user(db, user)
 
     # set refresh token in secure httpOnly cookie and return access token JSON
-    response = JSONResponse(
-        {"access_token": access_token, "token_type": "bearer"}
-    )
+    response = JSONResponse({"access_token": access_token, "token_type": "bearer"})
     # For cross-origin API calls from the frontend we need the cookie to be
     # sent with credentials. Use SameSite=None and Secure=True so browsers
     # will include the cookie on XHR/fetch POST requests when withCredentials
@@ -83,9 +81,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/refresh", response_model=Token)
-async def refresh(
-    request: Request, db: AsyncSession = Depends(get_db)
-):
+async def refresh(request: Request, db: AsyncSession = Depends(get_db)):
     raw = request.cookies.get(settings.REFRESH_TOKEN_COOKIE_NAME)
     if not raw:
         raise HTTPException(status_code=401, detail="Missing refresh token")
@@ -94,9 +90,7 @@ async def refresh(
     if not new_access:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    response = JSONResponse(
-        {"access_token": new_access, "token_type": "bearer"}
-    )
+    response = JSONResponse({"access_token": new_access, "token_type": "bearer"})
     # See note above: set SameSite=None and Secure=True so the browser will
     # include the refresh cookie on subsequent cross-origin refresh calls.
     response.set_cookie(
