@@ -1,3 +1,4 @@
+minio==7.1.11
 PyMuPDF==1.26.6
 httpx==0.28.1
 alembic==1.17.0

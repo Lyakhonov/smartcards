@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import auth, flashcards, groups, admin
 from app.services.init_admin import create_admin_if_not_exists
+from app.services.storage import storage
 
 
 # --- LIFESPAN FUNCTION (НОВЫЙ СПОСОБ) ---
@@ -14,7 +15,14 @@ async def lifespan(app: FastAPI):
     Управляет жизненным циклом приложения.
     Код до 'yield' выполняется при старте, после 'yield' — при остановке.
     """
+    # ensure admin exists
     await create_admin_if_not_exists()
+    # ensure storage bucket exists
+    try:
+        storage.ensure_bucket()
+    except Exception:
+        # don't fail the startup for transient storage problems
+        pass
     yield
 
 

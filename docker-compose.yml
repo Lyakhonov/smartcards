@@ -24,8 +24,15 @@ services:
       db:
         condition: service_healthy
     environment:
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_PUBLIC_ENDPOINT=http://localhost:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_SECURE=false
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartcards
       - SECRET_KEY=super_secret_key_123
+    extra_hosts:
+      - "localhost:host-gateway"
     command: >
       bash -c "alembic upgrade head && python -m app.main "
     ports:
@@ -43,6 +50,21 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
+  minio:
+    image: minio/minio:latest
+    container_name: smartcards-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
 volumes:
   postgres_data:
   ollama_data:
+  minio_data:
