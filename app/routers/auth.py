@@ -57,10 +57,7 @@ async def login_user(
 
     # set refresh token in secure httpOnly cookie and return access token JSON
     response = JSONResponse({"access_token": access_token, "token_type": "bearer"})
-    # For cross-origin API calls from the frontend we need the cookie to be
-    # sent with credentials. Use SameSite=None and Secure=True so browsers
-    # will include the cookie on XHR/fetch POST requests when withCredentials
-    # is used. Localhost is treated as a secure context in most browsers.
+
     response.set_cookie(
         settings.REFRESH_TOKEN_COOKIE_NAME,
         refresh_token,
@@ -91,8 +88,7 @@ async def refresh(request: Request, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     response = JSONResponse({"access_token": new_access, "token_type": "bearer"})
-    # See note above: set SameSite=None and Secure=True so the browser will
-    # include the refresh cookie on subsequent cross-origin refresh calls.
+
     response.set_cookie(
         settings.REFRESH_TOKEN_COOKIE_NAME,
         new_refresh,
