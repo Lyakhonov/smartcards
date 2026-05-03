@@ -47,6 +47,11 @@ async def refresh_tokens(db: AsyncSession, raw_refresh_token: str) -> Tuple[str,
     """
     token_hash = hash_refresh_token(raw_refresh_token)
     rt = await get_refresh_token_by_hash(db, token_hash)
+    
+    # Ensure expires_at is timezone-aware for comparison
+    if rt and rt.expires_at and not rt.expires_at.tzinfo:
+        rt.expires_at = rt.expires_at.replace(tzinfo=timezone.utc)
+    
     if not rt or rt.revoked or rt.expires_at < datetime.now(timezone.utc):
         return None, None
 

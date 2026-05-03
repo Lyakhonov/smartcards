@@ -1,0 +1,6 @@
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+httpx==0.28.1
+faker==22.0.0
+aiosqlite==0.22.1

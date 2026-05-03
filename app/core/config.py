@@ -5,6 +5,9 @@ load_dotenv()
 
 
 class Settings:
+    # Testing mode flag - allows returning refresh token in response body
+    TESTING = os.getenv("TESTING", "false").lower() in ("true", "1", "yes")
+    
     SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_123")
     ALGORITHM = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES = 60
